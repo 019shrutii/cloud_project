@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "workspaces": [
+    "Spendwise-frontend"
+  ],
+  "scripts": {
+    "build": "cd Spendwise-frontend && npm run build",
+    "dev": "cd Spendwise-frontend && npm run dev",
+    "lint": "cd Spendwise-frontend && npm run lint",
+    "preview": "cd Spendwise-frontend && npm run preview"
+  }
+}
