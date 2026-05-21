@@ -1,0 +1,75 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = "docker.io"
+        DOCKER_REPO = "yourdockerusername/spendwise-frontend"
+        IMAGE_TAG = "latest"
+        IMAGE_FULL_NAME = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${IMAGE_TAG}"
+        KUBE_NAMESPACE = "default"
+        KUBE_CONFIG_CREDENTIALS_ID = "kubeconfig-credentials"
+        DOCKER_CREDENTIALS_ID = "docker-registry-credentials"
+    }
+
+    stages {
+
+        stage('Clone') {
+            steps {
+                git 'https://github.com/019shrutii/cloud_project.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker build -t ${IMAGE_FULL_NAME} ./Spendwise-frontend"
+                    } else {
+                        bat "docker build -t %IMAGE_FULL_NAME% .\\Spendwise-frontend"
+                    }
+                }
+            }
+        }
+
+        stage('Login to Docker Registry') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: env.DOCKER_CREDENTIALS_ID, usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        if (isUnix()) {
+                            sh "docker login ${DOCKER_REGISTRY} -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                        } else {
+                            bat "docker login %DOCKER_REGISTRY% -u %DOCKER_USER% -p %DOCKER_PASS%"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh "docker push ${IMAGE_FULL_NAME}"
+                    } else {
+                        bat "docker push %IMAGE_FULL_NAME%"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: env.KUBE_CONFIG_CREDENTIALS_ID, variable: 'KUBECONFIG_FILE')]) {
+                    script {
+                        if (isUnix()) {
+                            sh "export KUBECONFIG=${KUBECONFIG_FILE} && kubectl apply -f k8s/ && kubectl set image deployment/frontend frontend=${IMAGE_FULL_NAME} -n ${KUBE_NAMESPACE}"
+                        } else {
+                            bat "set KUBECONFIG=%KUBECONFIG_FILE% && kubectl apply -f k8s/ && kubectl set image deployment/frontend frontend=%IMAGE_FULL_NAME% -n %KUBE_NAMESPACE%"
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
