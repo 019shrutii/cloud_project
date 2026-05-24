@@ -1,20 +1,41 @@
 pipeline {
     agent any
+    options {
+        skipDefaultCheckout()
+        timestamps()
+        ansiColor('xterm')
+    }
 
     environment {
         DOCKER_REGISTRY = "docker.io"
         DOCKER_REPO = "yourdockerusername/spendwise-frontend"
         IMAGE_TAG = "latest"
-        IMAGE_FULL_NAME = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${IMAGE_TAG}"
         KUBE_NAMESPACE = "default"
+        GIT_CREDENTIALS_ID = "github-credentials"
+
         DOCKER_CREDENTIALS_ID = "docker-registry-credentials"
         KUBE_CONFIG_CREDENTIALS_ID = "kubeconfig-credentials"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    checkout([$class: 'GitSCM',
+                        branches: [[name: env.BRANCH_NAME ? env.BRANCH_NAME : '*/master']],
+                        userRemoteConfigs: [[url: 'https://github.com/019shrutii/cloud_project.git', credentialsId: env.GIT_CREDENTIALS_ID]]
+                    ])
+                }
+            }
+        }
+
+        stage('Prepare') {
+            steps {
+                script {
+                    env.IMAGE_FULL_NAME = "${env.DOCKER_REGISTRY}/${env.DOCKER_REPO}:${env.IMAGE_TAG}"
+                    echo "Using image name: ${env.IMAGE_FULL_NAME}"
+                }
             }
         }
 
@@ -30,16 +51,10 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            steps {
-                sh "docker build -t ${IMAGE_FULL_NAME} ./Spendwise-frontend"
-            }
-        }
-
         stage('Login Docker') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: env.DOCKER_CREDENTIALS_ID,
+                    credentialsId: DOCKER_CREDENTIALS_ID,
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
@@ -48,22 +63,33 @@ pipeline {
             }
         }
 
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${env.IMAGE_FULL_NAME} ./Spendwise-frontend"
+            }
+        }
+
         stage('Push Image') {
             steps {
-                sh "docker push ${IMAGE_FULL_NAME}"
+                sh "docker push ${env.IMAGE_FULL_NAME}"
             }
         }
 
         stage('Deploy') {
             steps {
                 withCredentials([file(credentialsId: env.KUBE_CONFIG_CREDENTIALS_ID, variable: 'KUBECONFIG')]) {
-                    sh '''
+                    sh """
                         export KUBECONFIG=$KUBECONFIG
                         kubectl apply -f k8s/
-                        kubectl set image deployment/frontend frontend=${IMAGE_FULL_NAME} -n ${KUBE_NAMESPACE}
-                    '''
+                        kubectl set image deployment/frontend frontend=${env.IMAGE_FULL_NAME} -n ${KUBE_NAMESPACE}
+                    """
                 }
             }
+        }
+    }
+    post {
+        always {
+            cleanWs()
         }
     }
 }

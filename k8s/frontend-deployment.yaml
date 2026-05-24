@@ -20,9 +20,9 @@ spec:
       containers:
       - name: frontend
 
-        image: IMAGE_PLACEHOLDER
+        image: spendwise-frontend:prod
 
         imagePullPolicy: IfNotPresent
 
         ports:
-        - containerPort: 5173
+        - containerPort: 80
