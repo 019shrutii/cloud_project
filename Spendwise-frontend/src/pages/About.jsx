@@ -30,7 +30,7 @@ function About() {
                     Built for people who <span className="gradient-text">care about money</span>
                 </h1>
                 <p style={{ fontSize: "1.05rem", color: "var(--muted)", lineHeight: 1.8, maxWidth: "620px" }}>
-                    SpendWise is a full-stack MERN application that helps you stay on top of your finances.
+                    SpendWise is a full-stack MERN application that helps you to stay on top of your finances.
                     With real-time charts, JWT-secured accounts, and an intuitive dashboard, budgeting has never been this effortless.
                 </p>
             </div>
