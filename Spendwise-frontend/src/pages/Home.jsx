@@ -128,7 +128,7 @@ function Home() {
                     </h1>
 
                     <p className="hero-sub">
-                        SpendWise gives you powerful real-time insights into your spending habits —
+                        it  gives you powerful real-time insights into your spending habits —
                         beautifully visualized, securely stored, and always at your fingertips.
                     </p>
 
