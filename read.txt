@@ -1,15 +1,17 @@
 Developer (Code Changes)
-   ↓
-GitHub Repository (Source Code Repository)
-   ↓
-Jenkins CI/CD Pipeline (CI/CD Automation)
-   ↓
-Docker Containerization 
-   ↓
-Kubernetes/Minikube (Container Orchestration)
-   ↓
+        ↓
+GitHub Repository (Version Control & Source Code Management)
+        ↓
+Jenkins CI/CD Pipeline (Build & Deployment Automation)
+        ↓
+Terraform (Infrastructure Provisioning & Configuration)
+        ↓
+Docker Containerization (Application Packaging)
+        ↓
+Kubernetes / Minikube (Container Orchestration)
+        ↓
 Frontend Deployment (React/Vite Application)
-   ↓
-Prometheus Monitoring (Metrics Collection)
-   ↓
-Grafana Dashboard (Real-Time Visualization)
+        ↓
+Prometheus Monitoring (Metrics Collection & Monitoring)
+        ↓
+Grafana Dashboard (Real-Time Visualization & Analytics)
